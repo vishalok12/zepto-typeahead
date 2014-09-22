@@ -63,16 +63,6 @@
                     $optionsContainerDiv: $optionsContainerDiv
                 };
             }
-            function open() {
-                var $optionsContainerDiv = $this[0]._ac.$optionsContainerDiv;
-                $optionsContainerDiv.show();
-                $this.trigger('opened');
-            }
-            function close() {
-                var $optionsContainerDiv = $this[0]._ac.$optionsContainerDiv;
-                $optionsContainerDiv.hide();
-                $this.trigger('closed');
-            }
             function onBlur() {
                 var settings = $this[0]._ac.settings;
                 settings.onBlur(close);
@@ -87,7 +77,7 @@
                 if(value !== undefined) {
                     $this.val(value);
                 }
-                computeOptions();
+                // computeOptions();
                 setTimeout(function() {
                     $this.focus();
                 });
@@ -98,43 +88,6 @@
                 }
                 $currentOpt = $other;
                 $currentOpt.addClass('ac-opt-curr');
-            }
-            function computeOptions() {
-                var option,
-                    callback,
-                    $optionDiv,
-                    $divs = $(),
-                    query = $this.val(),
-                    $optionsContainerDiv = $this[0]._ac.$optionsContainerDiv,
-                    settings = $this[0]._ac.settings;
-                $optionsContainerDiv.empty();
-                if(query.length<settings.minLength) {
-                    close();
-                    return;
-                }
-                callback = function(data) {
-                    settings.data = settings.sort(data);
-                    for(var i=0; i<data.length && $divs.length<=settings.maxCount; i++) {
-                        option = data[i];
-                        if (settings.dataMethod instanceof Function || settings.matcher(query, option)) {
-                            $optionDiv = $('<div></div>').addClass('ac-opt');
-                            $optionDiv.attr('data-opt-idx', i);
-                            $optionDiv.append(settings.renderOption(option));
-                            $divs = $divs.add($optionDiv);
-                        }
-                    }
-                    if ($divs.length>0) {
-                        $optionsContainerDiv.append($divs);
-                        open();
-                    } else {
-                        close();
-                    }
-                };
-                if(settings.dataMethod instanceof Function) {
-                    settings.dataMethod(query, callback);
-                } else {
-                    callback(settings.data);
-                }
             }
             function keyHandler(event) {
                 var prev, next,
@@ -168,16 +121,16 @@
                         }
                         break;
                     default:
-                        computeOptions();
+                        computeOptions($this);
                         break;
                 }
             }
 
             if(!storedData) {
                 createOptionsDiv();
-                computeOptions();
+                computeOptions($this);
                 return $this.each(function() {
-                    $this.bind('focus.ac', computeOptions).bind('keyup.ac', keyHandler).bind('blur.ac', onBlur);
+                    $this.bind('keyup.ac', keyHandler).bind('blur.ac', onBlur);
                 });
             }
         },
@@ -204,6 +157,8 @@
             options = (options instanceof Array)? options:[options];
             options = unique(options.concat(settings.data));
             settings.data = settings.sort(options);
+
+            computeOptions($this);
         },
         remove: function(options) {
             var index,
@@ -216,6 +171,8 @@
                     settings.data.splice(index, 1);
                 }
             });
+
+            computeOptions($this);
         }
     };
 
@@ -228,4 +185,53 @@
             $.error('not-supported');
         }
     };
+
+    function computeOptions($this) {
+        var option,
+            callback,
+            $optionDiv,
+            $divs = $(),
+            query = $this.val(),
+            $optionsContainerDiv = $this[0]._ac.$optionsContainerDiv,
+            settings = $this[0]._ac.settings;
+        $optionsContainerDiv.empty();
+        if(query.length<settings.minLength) {
+            close();
+            return;
+        }
+        callback = function(data) {
+            settings.data = settings.sort(data);
+            for(var i=0; i<data.length && $divs.length<=settings.maxCount; i++) {
+                option = data[i];
+                if (settings.dataMethod instanceof Function || settings.matcher(query, option)) {
+                    $optionDiv = $('<div></div>').addClass('ac-opt');
+                    $optionDiv.attr('data-opt-idx', i);
+                    $optionDiv.append(settings.renderOption(option));
+                    $divs = $divs.add($optionDiv);
+                }
+            }
+            if ($divs.length>0) {
+                $optionsContainerDiv.append($divs);
+                open();
+            } else {
+                close();
+            }
+        };
+        if(settings.dataMethod instanceof Function) {
+            settings.dataMethod(query, callback);
+        } else {
+            callback(settings.data);
+        }
+        function open() {
+            var $optionsContainerDiv = $this[0]._ac.$optionsContainerDiv;
+            $optionsContainerDiv.show();
+            $this.trigger('opened');
+        }
+        function close() {
+            var $optionsContainerDiv = $this[0]._ac.$optionsContainerDiv;
+            $optionsContainerDiv.hide();
+            $this.trigger('closed');
+        }
+    }
+
 })(Zepto);
