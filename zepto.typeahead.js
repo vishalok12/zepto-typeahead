@@ -56,7 +56,7 @@
                 $optionsContainerDiv.on('mousedown.ac', 'div', chooseOption);
                 $appendDiv = (settings.appendTo)? $(settings.appendTo):$('body');
                 $appendDiv.append($optionsContainerDiv);
-                settings.data = settings.sort(settings.data);
+                // settings.data = settings.sort(settings.data);
                 // Save
                 $this[0]._ac = {
                     settings: settings,
@@ -156,7 +156,8 @@
             }
             options = (options instanceof Array)? options:[options];
             options = unique(options.concat(settings.data));
-            settings.data = settings.sort(options);
+            // settings.data = settings.sort(options);
+            settings.data = options;
 
             computeOptions($this);
         },
@@ -200,7 +201,8 @@
             return;
         }
         callback = function(data) {
-            settings.data = settings.sort(data);
+            // settings.data = settings.sort(data);
+            settings.data = data;
             for(var i=0; i<data.length && $divs.length<=settings.maxCount; i++) {
                 option = data[i];
                 if (settings.dataMethod instanceof Function || settings.matcher(query, option)) {
